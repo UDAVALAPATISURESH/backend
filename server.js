@@ -48,7 +48,8 @@ async function startServer() {
     server.applyMiddleware({ app, path: '/graphql' });
 
     const PORT = process.env.PORT || 4000;
-    const HOST = process.env.HOST || 'localhost';
+    // Render requires binding to 0.0.0.0, not localhost
+    const HOST = process.env.HOST || '0.0.0.0';
     
     const httpServer = createServer(app);
     
