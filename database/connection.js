@@ -49,14 +49,14 @@ const connectDB = async () => {
     // Test connection
     await sequelize.authenticate();
     const dbType = process.env.DATABASE_URL ? 'PostgreSQL' : 'MySQL';
-    const dbInfo = process.env.DATABASE_URL 
+    const dbInfo = process.env.DATABASE_URL
       ? process.env.DATABASE_URL.split('@')[1]?.split('/')[0] || 'connected'
       : `${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || 3306}/${process.env.DB_NAME || 'tms_db'}`;
-    
+
     console.log(`✅ ${dbType} Connected: ${dbInfo}`);
 
     // Sync database (create tables if they don't exist)
-    await sequelize.sync({ alter: false });
+    await sequelize.sync({ alter: true });
     console.log('✅ Database tables ready');
 
     return sequelize;

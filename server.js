@@ -3,6 +3,7 @@ const { ApolloServer } = require('apollo-server-express');
 const { createServer } = require('http');
 const { useServer } = require('graphql-ws/lib/use/ws');
 const { WebSocketServer } = require('ws');
+const { makeExecutableSchema } = require('@graphql-tools/schema');
 const cors = require('cors');
 require('dotenv').config();
 
@@ -11,6 +12,8 @@ const resolvers = require('./resolvers');
 const { authenticateToken } = require('./middleware/auth');
 const { connectDB } = require('./database/connection');
 const { initializeSampleData } = require('./database/seed');
+const authRoutes = require('./routes/authRoutes');
+const shipmentRoutes = require('./routes/shipmentRoutes');
 
 const app = express();
 
@@ -39,21 +42,31 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-  context: async ({ req }) => {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    const user = await authenticateToken(token);
-    return { user };
-  },
-  introspection: true,
-  playground: true,
-});
+// REST API routes (alongside GraphQL)
+app.use('/api/auth', authRoutes);
+app.use('/api/shipments', shipmentRoutes);
 
 async function startServer() {
   try {
+    console.log('🔧 Building GraphQL schema...');
+    // Build executable schema for both Apollo and WebSocket
+    const schema = makeExecutableSchema({ typeDefs, resolvers });
+    console.log('✅ GraphQL schema built successfully');
+
+    console.log('🚀 Starting Apollo Server...');
+    const server = new ApolloServer({
+      schema,
+      context: async ({ req }) => {
+        const token = req.headers.authorization?.replace('Bearer ', '');
+        const user = await authenticateToken(token);
+        return { user };
+      },
+      introspection: true,
+      playground: true,
+    });
+
     // Connect to database
+    console.log('📦 Connecting to database...');
     await connectDB();
     
     // Create default admin if no users exist
@@ -77,7 +90,7 @@ async function startServer() {
 
     const serverCleanup = useServer(
       {
-        schema: server.schema,
+        schema,
         context: async (ctx) => {
           const token = ctx.connectionParams?.authorization?.replace('Bearer ', '') || ctx.connectionParams?.token;
           const user = await authenticateToken(token);
@@ -102,16 +115,16 @@ async function startServer() {
     // Handle port already in use error gracefully
     httpServer.on('error', (error) => {
       if (error.code === 'EADDRINUSE') {
-        console.error(`❌ Port ${PORT} is already in use.`);
-        console.error(`💡 Kill the process or change PORT in .env file`);
-        console.error(`💡 To kill process: Get-NetTCPConnection -LocalPort ${PORT} | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force }`);
+        console.error(` Port ${PORT} is already in use.`);
+        console.error(` Kill the process or change PORT in .env file`);
+        console.error(` To kill process: Get-NetTCPConnection -LocalPort ${PORT} | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force }`);
         process.exit(1);
       } else {
         throw error;
       }
     });
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
+    console.error(' Failed to start server:', error);
     process.exit(1);
   }
 }

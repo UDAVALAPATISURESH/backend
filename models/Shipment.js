@@ -57,6 +57,26 @@ const Shipment = sequelize.define('Shipment', {
     type: DataTypes.STRING,
     allowNull: true
   },
+  currentLocation: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  currentLat: {
+    type: DataTypes.DECIMAL(10, 7),
+    allowNull: true
+  },
+  currentLng: {
+    type: DataTypes.DECIMAL(10, 7),
+    allowNull: true
+  },
+  lastLocationUpdate: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
+  pinCode: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
   createdAt: {
     type: DataTypes.DATE,
     allowNull: false,

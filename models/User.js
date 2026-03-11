@@ -28,6 +28,11 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false
   },
+  // Which user created this account (email or identifier)
+  createdBy: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
   role: {
     type: DataTypes.ENUM('ADMIN', 'EMPLOYEE'),
     allowNull: false,
@@ -37,6 +42,20 @@ const User = sequelize.define('User', {
     type: DataTypes.JSON,
     allowNull: true,
     defaultValue: []
+  },
+  isFirstLogin: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: true
+  },
+  googleId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true
+  },
+  totpSecret: {
+    type: DataTypes.STRING,
+    allowNull: true
   },
   createdAt: {
     type: DataTypes.DATE,

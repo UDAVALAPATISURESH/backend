@@ -15,7 +15,8 @@ const initializeSampleData = async () => {
         email: 'admin@tms.com',
         password: 'admin123', // Will be hashed automatically
         role: 'ADMIN',
-        scopes: [] // Admin has all access
+        scopes: [], // Admin has all access
+        createdBy: 'system',
       });
       
       console.log('✅ Default admin created:');
